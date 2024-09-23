@@ -1,9 +1,57 @@
+import { Label, TextInput, Button } from 'flowbite-react'
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Signup() {
   return (
-    <div>
-      
+    <div className='min-h-screen mt-20'>
+      <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
+        {/* left*/}
+        <div className="flex-1">
+          <Link to ='/' className='text-4xl  font-bold dark:text-white'>
+            <span className='px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to bg-pink-500 rounded-lg text-white'>fragyyy's</span> 
+            Blog
+          </Link>
+          <p className='text-sm mt-5'>
+            Welcome to my blog, where I share my thoughts and experiences on various topics.
+            Register using email and password or google
+          </p>
+        </div>
+        {/* right*/}
+        <div className="w-flex-1">
+          <form className='flex flex-col'>
+            <div className="">
+              <Label value='Your Username'></Label>
+              <TextInput 
+              type='text' 
+              placeholder='Username'
+              id='username'
+              ></TextInput>
+            </div>
+            <div className="">
+              <Label value='Your Email'></Label>
+              <TextInput 
+              type='email' 
+              placeholder='email@gmail.com'
+              id='email'
+              ></TextInput>
+            </div>
+            <div className="">
+              <Label value='Your Password'></Label>
+              <TextInput 
+              type='password' 
+              placeholder='Password'
+              id='password'
+              ></TextInput>
+            </div>
+            <button type="button" class="text-white bg-gradient-to-r from-indigo-500 via-purple-500 to bg-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 mt-5 transition-all">Submit</button>
+            </form>
+            <div className="flex gap-2 text-sm mt-5 ">
+              <span>Have an account?  </span>
+              <Link to='/login' className='text-blue-500'>Sign in</Link>
+            </div>
+        </div>
+      </div>
     </div>
   )
 }
