@@ -2,15 +2,18 @@ import { Label, TextInput, Alert } from "flowbite-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { SignInStart, SignInSuccess, SignInFailure } from "../app/user/userSlice";
+import { useSelector } from "react-redux";
 
 export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const {loading , error: errorMessage} = useSelector(state => state.user)
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -20,11 +23,10 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
-      return setErrorMessage("Please fill in all fields");
+      return dispatch(SignInFailure('Fill out all the fields'))
     }
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      dispatch(SignInStart());
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" }, // Corrected typo here
@@ -33,13 +35,13 @@ export default function Login() {
 
       const data = await res.json();
       if (data.success === false) {
-        setErrorMessage(data.message);
+        dispatch(SignInFailure(data.message))
       } else {
+        dispatch(SignInSuccess(data));
         navigate('/')
       }
-      setLoading(false);
     } catch (error) {
-      setErrorMessage(error.message);
+      dispatch(SignInFailure(error.message))
     }
   };
 
