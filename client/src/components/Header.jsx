@@ -28,7 +28,7 @@ export default function Header() {
         <Button className='w-12 h-10 hidden rounded-full sm:flex sm:justify-center sm:items-center' color='gray'>
           <FaMoon />
         </Button>
-        <Link to='/login'>
+        <Link to='/signup'>
           <Button className='w-16 h-10 bg-gradient-to-r from-indigo-500 via-purple-500 to bg-pink-500 rounded-lg text-white'>
             Sign In
           </Button>
