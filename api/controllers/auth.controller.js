@@ -1,52 +1,76 @@
 import User from '../models/user.model.js';
 import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { errorHandler } from '../utils/error.js';
-import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'; // Correct import for dotenv
 
+// Load environment variables from the .env file
+dotenv.config();
+
+// Sign up a new user
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  // Validate required fields
+  // Check if required fields are provided and valid
   if (!username || !email || !password || username.trim() === '' || password.trim() === '') {
     return next(errorHandler(400, 'All fields are required'));
   }
 
-  const hashedPassword = bcryptjs.hashSync(password, 10);
-  const newUser = new User({ username, email, password: hashedPassword });
-
   try {
+    // Hash the password before saving
+    const hashedPassword = bcryptjs.hashSync(password, 10);
+    const newUser = new User({ username, email, password: hashedPassword });
+
+    // Save the new user in the database
     await newUser.save();
-    res.json({ message: 'Signup successful' });
+
+    // Send success response
+    res.status(201).json({ message: 'Signup successful' });
   } catch (error) {
-    // Error handling
+    // Catch and forward any errors (e.g., database issues)
     next(error);
   }
 };
 
-export const login = async ( req, res, next ) => {
+// Login an existing user
+export const login = async (req, res, next) => {
   const { email, password } = req.body;
-  if(!email || !password || email === '' || password === ''){
-    return next(errorHandler(400, 'All fields are required'))
+
+  // Validate required fields
+  if (!email || !password || email.trim() === '' || password.trim() === '') {
+    return next(errorHandler(400, 'All fields are required'));
   }
 
   try {
-    const validUser = await User.findOne({ email })
-    if(!validUser){
-      return next(errorHandler(404, 'User not found'))
+    // Check if the user exists in the database
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(errorHandler(401, 'User not found')); // Return 401 for unauthorized access
     }
-    const validPassword = bcryptjs.compareSync(password, validUser.password)
-    if(!validPassword){
-      return next(errorHandler(404, 'Invalid password'))
-    }
-    const token = jwt.sign(
-      { id: validUser._id}, process.env.JWT_SECRET, { expiresIn: '1d'}
-    )
 
-    const { password: pass, ...rest} = validUser._doc
-    res.status(200).cookie('access_token', token, {
-      httpOnly: true,
-    }).json(rest)
-  } catch(error){
-    next(error)
+    // Verify if the password matches the hashed password in the database
+    const isPasswordValid = bcryptjs.compareSync(password, user.password);
+    if (!isPasswordValid) {
+      return next(errorHandler(401, 'Invalid password')); // Return 401 for invalid credentials
+    }
+
+    // Generate a JWT token for the authenticated user
+    const token = jwt.sign(
+      { id: user._id },            // Payload with user ID
+      process.env.JWT_SECRET,      // Secret key from environment variable
+      { expiresIn: '1d' }          // Token expiration (1 day)
+    );
+
+    // Remove password from the user object before sending the response
+    const { password: hashedPassword, ...userDetails } = user._doc;
+
+    // Set the token as an HTTP-only cookie and send the user data in the response
+    res.status(200)
+      .cookie('access_token', token, { httpOnly: true })
+      .json(userDetails);
+  } catch (error) {
+    // Log the error and forward it to the error handler
+    console.error('Login Error:', error);
+    next(error);
   }
-}
+};
