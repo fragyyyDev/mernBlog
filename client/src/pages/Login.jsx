@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SignInStart, SignInSuccess, SignInFailure } from "../app/user/userSlice";
+import OAuth from "../components/OAuth";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -131,6 +132,7 @@ export default function Login() {
                 </svg>
               ) : 'Submit'}
             </button>
+            <OAuth/>
           </form>
 
           {/* Sign Up Link */}

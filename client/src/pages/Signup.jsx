@@ -1,6 +1,7 @@
 import { Label, TextInput, Alert } from "flowbite-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import OAuth from "../components/OAuth";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -125,6 +126,7 @@ export default function Signup() {
               ) : null}
               Submit
             </button>
+            <OAuth/>
           </form>
           <div className="flex gap-2 text-sm mt-5">
             <span>Have an account?</span>

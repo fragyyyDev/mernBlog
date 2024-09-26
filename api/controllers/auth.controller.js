@@ -74,3 +74,47 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
+
+export const google = async (req, res, next) => {
+  const { username, email, photoURL } = req.body;
+
+  // Log the incoming request body for debugging
+  console.log('Incoming request body:', req.body);
+
+  // Check if required fields are present
+  if (!username || !email) {
+      return next(errorHandler(400, 'All fields (username, email, photoURL) are required'));
+  }
+
+  try {
+      // Check if the user already exists
+      const user = await User.findOne({ email });
+      if (user) {
+          const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+          const { password, ...rest } = user._doc;
+          return res.status(200)
+                    .cookie('access_token', token, { httpOnly: true })
+                    .json(rest);
+      } else {
+          const generatedPassword = email + process.env.JWT_SECRET;
+          const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+          const newUser = new User({
+              username: username.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4),
+              email,
+              password: hashedPassword,
+              profilePicture: photoURL, // Fixed typo here
+          });
+
+          // Save the new user in the database
+          await newUser.save();
+          const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+          const { password, ...rest } = newUser._doc;
+          return res.status(201)
+                    .cookie('access_token', token, { httpOnly: true })
+                    .json(rest);
+      }
+  } catch (error) {
+      console.error('Error during Google authentication:', error);
+      next(error);
+  }
+};
